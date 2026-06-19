@@ -1,12 +1,39 @@
 from flask import Flask, request
 import requests
+import os
+import paho.mqtt.publish as publish
 
 app = Flask(__name__)
-import os
 
 WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")
+
+MQTT_HOST = "2772f609444f473aae9a80a4a5e31db6.s1.eu.hivemq.cloud"
+MQTT_PORT = 8883
+MQTT_USER = "esp32"
+MQTT_PASS = "Esp32senka"
+
+def publicar_mqtt(topic, mensaje):
+    publish.single(
+        topic,
+        mensaje,
+        hostname=MQTT_HOST,
+        port=MQTT_PORT,
+        auth={"username": MQTT_USER, "password": MQTT_PASS},
+        tls={}
+    )
+
+def procesar_mensaje(texto):
+    texto = texto.lower().strip()
+    if "luz" in texto and any(p in texto for p in ["on", "encend", "prend"]):
+        publicar_mqtt("casa/luces", "ON")
+        return "Luz encendida 💡"
+    elif "luz" in texto and any(p in texto for p in ["off", "apag"]):
+        publicar_mqtt("casa/luces", "OFF")
+        return "Luz apagada 🌙"
+    else:
+        return "No entendí. Probá: 'luz on' o 'luz off'"
 
 def enviar_mensaje(numero, texto):
     url = f"https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages"
@@ -38,10 +65,9 @@ def recibir_mensaje():
         mensaje = data["entry"][0]["changes"][0]["value"]["messages"][0]
         numero = mensaje["from"]
         tipo = mensaje["type"]
-
         if tipo == "text":
             texto = mensaje["text"]["body"]
-            respuesta = f"Recibí tu mensaje: {texto}"
+            respuesta = procesar_mensaje(texto)
             enviar_mensaje(numero, respuesta)
     except:
         pass
