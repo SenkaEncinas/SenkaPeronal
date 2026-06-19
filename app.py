@@ -2,10 +2,11 @@ from flask import Flask, request
 import requests
 
 app = Flask(__name__)
+import os
 
-WHATSAPP_TOKEN = "EAAtk2S9icJIBRwZAzeTpfvEmOI7S6r0qrX86f0StPsEgZAAyN6r45iOnZCmzqWRd1usBNf5dEuQQ52BwzyNZAdsy0zaMZAxJ2r7JtA2D02ZAcOizADUUnnyQnBsoh3TkKqV3VKepxrB5FDPQptCLZCZChMCPCMv9Qi6GZCu0bxyGKSs66w3lt7yvcRSxqLxntxA0yiF9HCaWocqz7ZBssam3LoTijlkQIyDLPL0O1VGnOwKUw6iLXttSinFPt4OZBkIhVzbvKKrSWZAkrcvZCcKGUfHZCuGQZDZD"
-PHONE_NUMBER_ID = "1107700089101313"
-VERIFY_TOKEN = "senka_verify_2024"
+WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
+PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")
 
 def enviar_mensaje(numero, texto):
     url = f"https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages"
