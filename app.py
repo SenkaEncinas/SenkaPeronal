@@ -121,7 +121,9 @@ def recibir_mensaje():
             texto = mensaje["text"]["body"]
             procesar_mensaje(numero, texto)
     except Exception as e:
+        import traceback
         print(f"Error: {e}")
+        print(traceback.format_exc())
     return "ok", 200
 
 def mqtt_listener():
