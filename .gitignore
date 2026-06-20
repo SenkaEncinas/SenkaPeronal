@@ -1,4 +1,6 @@
 venv/
 firebase_key.json
+google_token.json
+google_credentials.json
 __pycache__/
 *.pyc
