@@ -51,69 +51,76 @@ def get_agenda_manana():
 def procesar_mensaje(numero, texto):
     t = texto.lower().strip()
 
-    if t in ["menu", "menú", "hola", "inicio", "ayuda", "help"]:
+    # Menú
+    if any(p in t for p in ["menu", "menú", "ayuda", "help", "inicio"]):
         return menu_principal()
 
-    if t in ["luces", "luz"]:
+    # Saludo
+    if any(p in t for p in ["hola", "buenas", "hey", "qué tal", "como estas"]):
+        return menu_principal()
+
+    # Luces
+    if any(p in t for p in ["luces", "luz", "focos", "foco"]) and not any(p in t for p in ["on", "off", "encend", "apag", "prend"]):
         return menu_luces()
 
-    if t == "todo on":
+    # Todo on/off
+    if any(p in t for p in ["todo", "todas", "todos"]) and any(p in t for p in ["on", "encend", "prend"]):
         return todo_on()
-    if t == "todo off":
+    if any(p in t for p in ["todo", "todas", "todos"]) and any(p in t for p in ["off", "apag"]):
         return todo_off()
 
-    for luz_id in LUCES:
-        if t.startswith(luz_id + " "):
-            if any(p in t for p in ["on", "encend", "prend"]):
+    # Luces individuales
+    for luz_id, luz in LUCES.items():
+        nombre = luz["nombre"].lower()
+        palabras = nombre.split()
+        if any(p in t for p in palabras) or luz_id in t:
+            if any(p in t for p in ["on", "encend", "prend", "pone"]):
                 return encender(luz_id)
-            elif any(p in t for p in ["off", "apag"]):
+            elif any(p in t for p in ["off", "apag", "sac"]):
                 return apagar(luz_id)
 
-    if t == "estado":
+    # Estado
+    if any(p in t for p in ["estado", "qué luces", "que luces", "cuales", "cuáles"]):
         return get_estado()
 
-    if t in ["agenda", "hoy"]:
+    # Agenda / Calendar
+    if any(p in t for p in ["agenda", "eventos", "calendario", "qué tengo", "que tengo"]) and not any(p in t for p in ["mañana", "manana"]):
         return ver_eventos_hoy()
 
-    if t.startswith("evento "):
+    # Crear evento
+    if any(p in t for p in ["agenda", "agendar", "crear evento", "nuevo evento", "reunión", "reunion"]) and any(p in t for p in ["hoy", "mañana", "manana"]):
         try:
             partes = texto.split(" ", 3)
             return crear_evento(partes[1], partes[2], partes[3])
         except:
             return "❌ Usá: *evento [titulo] [hoy/mañana] [HH:MM]*"
 
-    if t == "tareas":
+    # Tareas
+    if any(p in t for p in ["tareas", "pendientes", "qué tengo pendiente", "que tengo pendiente"]):
         return ver_tasks()
-    if t.startswith("tarea "):
-        return agregar_task(texto[6:])
+    if any(p in t for p in ["agregar tarea", "nueva tarea", "añadir tarea", "tarea "]):
+        return agregar_task(texto.split("tarea ", 1)[-1])
 
-    if t.startswith("timer "):
+    # Timer
+    if any(p in t for p in ["timer", "temporizador", "alarma", "minutos", "tiempo"]):
         try:
-            return iniciar_timer(numero, t.split()[1], enviar_mensaje)
+            nums = [s for s in t.split() if s.isdigit()]
+            if nums:
+                return iniciar_timer(numero, nums[0], enviar_mensaje)
         except:
-            return "❌ Usá: *timer [minutos]*"
+            pass
+        return "❌ Usá: *timer [minutos]*"
 
-    if t == "clima":
+    # Clima
+    if any(p in t for p in ["clima", "tiempo", "temperatura", "lluvia", "calor", "frio", "frío"]):
         return obtener_clima()
 
-    if t in ["usdt", "dolar", "dólar"]:
+    # USDT
+    if any(p in t for p in ["usdt", "dolar", "dólar", "precio", "cambio", "boliviano"]):
         return obtener_usdt()
 
-    if t in ["bn", "buenas noches"]:
-        agenda_manana = get_agenda_manana()
-        tareas = ver_tasks()
-        usdt = obtener_usdt()
-        luces = buenas_noches()
-        return (
-            "🌙 *Buenas noches!*\n"
-            "━━━━━━━━━━━━━━━━━━━\n\n"
-            f"{agenda_manana}\n\n"
-            f"{tareas}\n\n"
-            f"{usdt}\n\n"
-            f"{luces}"
-        )
-
-    if t in ["bd", "buenos días", "buenos dias"]:
+    # Buenos días
+    if any(p in t for p in ["buenos días", "buenos dias", "buen día", "buen dia", "bd", "me desperté", "me desperte", "desperté", "desperte"]):
         agenda = ver_eventos_hoy()
         tareas = ver_tasks()
         clima = obtener_clima()
@@ -125,6 +132,21 @@ def procesar_mensaje(numero, texto):
             f"{usdt}\n\n"
             f"{agenda}\n\n"
             f"{tareas}"
+        )
+
+    # Buenas noches
+    if any(p in t for p in ["buenas noches", "bn", "me voy a dormir", "a dormir", "good night"]):
+        agenda_manana = get_agenda_manana()
+        tareas = ver_tasks()
+        usdt = obtener_usdt()
+        luces = buenas_noches()
+        return (
+            "🌙 *Buenas noches!*\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            f"{agenda_manana}\n\n"
+            f"{tareas}\n\n"
+            f"{usdt}\n\n"
+            f"{luces}"
         )
 
     return "No entendí. Escribí *menu* para ver las opciones 🏠"
