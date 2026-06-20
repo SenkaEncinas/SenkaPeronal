@@ -2,3 +2,4 @@ flask
 requests
 gunicorn
 paho-mqtt
+firebase-admin
