@@ -1,7 +1,11 @@
 from casa import LUCES, encender, apagar, todo_on, todo_off, get_estado, menu_luces, buenas_noches, buenos_dias
-from google_api import ver_eventos_hoy, crear_evento, ver_tasks, agregar_task
+from google_api import ver_eventos_hoy, crear_evento, ver_tasks, agregar_task, get_services
 from utils import obtener_clima, obtener_usdt, iniciar_timer
 from whatsapp import enviar_mensaje
+from datetime import datetime, timedelta
+import pytz
+
+BOL = pytz.timezone("America/La_Paz")
 
 def menu_principal():
     return (
@@ -20,6 +24,29 @@ def menu_principal():
         "☀️ *bd* — Buenos días\n"
         "━━━━━━━━━━━━━━━━━━━"
     )
+
+def get_agenda_manana():
+    try:
+        calendar, _ = get_services()
+        manana_inicio = (datetime.now(BOL) + timedelta(days=1)).replace(hour=0, minute=0, second=0).isoformat()
+        manana_fin = (datetime.now(BOL) + timedelta(days=1)).replace(hour=23, minute=59, second=59).isoformat()
+        eventos = calendar.events().list(
+            calendarId='primary',
+            timeMin=manana_inicio,
+            timeMax=manana_fin,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute().get('items', [])
+        if not eventos:
+            return "📅 No tenés eventos mañana."
+        resp = "📅 *Eventos de mañana:*\n━━━━━━━━━━━━━\n"
+        for e in eventos:
+            inicio = e['start'].get('dateTime', e['start'].get('date'))
+            hora = datetime.fromisoformat(inicio).strftime('%H:%M') if 'T' in inicio else "Todo el día"
+            resp += f"🕐 {hora} — {e['summary']}\n"
+        return resp
+    except:
+        return "📅 No pude obtener eventos de mañana."
 
 def procesar_mensaje(numero, texto):
     t = texto.lower().strip()
@@ -73,8 +100,31 @@ def procesar_mensaje(numero, texto):
         return obtener_usdt()
 
     if t in ["bn", "buenas noches"]:
-        return buenas_noches()
+        agenda_manana = get_agenda_manana()
+        tareas = ver_tasks()
+        usdt = obtener_usdt()
+        luces = buenas_noches()
+        return (
+            "🌙 *Buenas noches!*\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            f"{agenda_manana}\n\n"
+            f"{tareas}\n\n"
+            f"{usdt}\n\n"
+            f"{luces}"
+        )
+
     if t in ["bd", "buenos días", "buenos dias"]:
-        return buenos_dias()
+        agenda = ver_eventos_hoy()
+        tareas = ver_tasks()
+        clima = obtener_clima()
+        usdt = obtener_usdt()
+        return (
+            "☀️ *Buenos días!*\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            f"{clima}\n\n"
+            f"{usdt}\n\n"
+            f"{agenda}\n\n"
+            f"{tareas}"
+        )
 
     return "No entendí. Escribí *menu* para ver las opciones 🏠"

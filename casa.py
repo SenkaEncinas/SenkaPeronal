@@ -72,5 +72,4 @@ def buenas_noches():
     return "🌙 *Buenas noches!* Todas las luces apagadas 😴"
 
 def buenos_dias():
-    encender("1")
     return "☀️ *Buenos días!* Luz principal encendida 💪"

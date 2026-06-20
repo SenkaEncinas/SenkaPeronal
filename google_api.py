@@ -82,3 +82,8 @@ def agregar_task(titulo):
         return f"✅ Google Task: _{titulo}_"
     except Exception as e:
         return f"❌ Error: {e}"
+def get_services():
+    creds = Credentials.from_authorized_user_file('google_token.json')
+    calendar = build('calendar', 'v3', credentials=creds)
+    tasks = build('tasks', 'v1', credentials=creds)
+    return calendar, tasks
