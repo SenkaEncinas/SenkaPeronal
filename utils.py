@@ -1,5 +1,9 @@
 import requests
 import threading
+import os
+from groq import Groq
+
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def obtener_clima():
     try:
@@ -46,3 +50,15 @@ def iniciar_timer(numero, minutos, enviar_fn):
         enviar_fn(numero, f"⏰ Timer de *{minutos} min* terminó!")
     threading.Thread(target=avisar, daemon=True).start()
     return f"⏱️ Timer de *{minutos} minutos* iniciado."
+
+def transcribir_audio(audio_path):
+    try:
+        with open(audio_path, "rb") as f:
+            transcripcion = groq_client.audio.transcriptions.create(
+                file=(audio_path, f.read()),
+                model="whisper-large-v3",
+                language="es"
+            )
+        return transcripcion.text
+    except Exception as e:
+        return None
