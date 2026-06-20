@@ -7,11 +7,59 @@ groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def obtener_clima():
     try:
-        r = requests.get("https://wttr.in/Santa+Cruz+de+la+Sierra+Bolivia?format=3&m", timeout=5)
-        return f"🌤️ {r.text.strip()}"
-    except:
-        return "❌ No pude obtener el clima."
+        # Datos detallados
+        r = requests.get(
+            "https://wttr.in/Santa+Cruz+de+la+Sierra+Bolivia?format=j1",
+            timeout=5
+        )
+        data = r.json()
+        
+        hoy = data["weather"][0]
+        actual = data["current_condition"][0]
+        
+        temp_actual = actual["temp_C"]
+        sensacion = actual["FeelsLikeC"]
+        humedad = actual["humidity"]
+        desc = actual["lang_es"][0]["value"] if actual.get("lang_es") else actual["weatherDesc"][0]["value"]
+        
+        temp_max = hoy["maxtempC"]
+        temp_min = hoy["mintempC"]
+        lluvia = hoy["hourly"][4]["chanceofrain"]  # probabilidad al mediodía
+        nieve = hoy["hourly"][4]["chanceofsunshine"]
+        viento = actual["windspeedKmph"]
+        
+        # Emoji según condición
+        if int(lluvia) > 60:
+            emoji_dia = "🌧️ Va a llover bastante"
+            consejo = "☂️ Llevá paraguas"
+        elif int(lluvia) > 30:
+            emoji_dia = "🌦️ Puede llover"
+            consejo = "👀 Ojo con la lluvia"
+        elif int(temp_max) > 32:
+            emoji_dia = "☀️ Día caluroso"
+            consejo = "💧 Tomá bastante agua"
+        elif int(temp_max) < 22:
+            emoji_dia = "🧥 Día fresco"
+            consejo = "🧣 Considerá abrigarte"
+        else:
+            emoji_dia = "🌤️ Día agradable"
+            consejo = "😎 Buen día para salir"
 
+        return (
+            f"🌡️ *Clima — Santa Cruz*\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"{emoji_dia}\n"
+            f"📍 Ahora: *{temp_actual}°C* — {desc}\n"
+            f"🌡️ Máx: *{temp_max}°C* / Mín: *{temp_min}°C*\n"
+            f"💧 Humedad: *{humedad}%*\n"
+            f"🌧️ Prob. lluvia: *{lluvia}%*\n"
+            f"💨 Viento: *{viento} km/h*\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"{consejo}"
+        )
+    except Exception as e:
+        return f"❌ No pude obtener el clima: {e}"
+    
 def obtener_usdt():
     try:
         url = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
