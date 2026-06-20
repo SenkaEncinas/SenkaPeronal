@@ -2,7 +2,6 @@ flask
 requests
 gunicorn
 paho-mqtt
-firebase-admin
 pytz
 google-auth
 google-auth-oauthlib
