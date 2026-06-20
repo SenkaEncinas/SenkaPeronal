@@ -10,12 +10,34 @@ def obtener_clima():
 
 def obtener_usdt():
     try:
-        r = requests.get("https://api.exchangerate-api.com/v4/latest/USD", timeout=5)
+        url = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
+        headers = {"Content-Type": "application/json"}
+        body = {
+            "asset": "USDT",
+            "fiat": "BOB",
+            "merchantCheck": False,
+            "page": 1,
+            "payTypes": [],
+            "publisherType": None,
+            "rows": 5,
+            "tradeType": "BUY"
+        }
+        r = requests.post(url, headers=headers, json=body, timeout=10)
         data = r.json()
-        bob = data["rates"].get("BOB", 6.91)
-        return f"💲 *USDT:* ~1.00 USD\n💵 Equivalente: ~{bob:.2f} Bs"
-    except:
-        return "❌ No pude obtener el precio."
+        precios = [float(ad["adv"]["price"]) for ad in data["data"]]
+        promedio = sum(precios) / len(precios)
+        minimo = min(precios)
+        maximo = max(precios)
+        return (
+            f"💲 *USDT/BOB — Binance P2P*\n"
+            f"━━━━━━━━━━━━━\n"
+            f"📊 Promedio: *{promedio:.2f} Bs*\n"
+            f"⬇️ Mínimo: *{minimo:.2f} Bs*\n"
+            f"⬆️ Máximo: *{maximo:.2f} Bs*\n"
+            f"_(Top 5 ofertas de compra)_"
+        )
+    except Exception as e:
+        return f"❌ No pude obtener el precio P2P: {e}"
 
 def iniciar_timer(numero, minutos, enviar_fn):
     def avisar():
