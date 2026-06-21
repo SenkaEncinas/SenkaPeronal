@@ -7,17 +7,33 @@ ADMIN = [
     "59167703883",  # Senka
 ]
 
-# Números con acceso limitado (familia)
+# Números con acceso a luces (familia)
 FAMILIA = [
-     "59172157751",
-     "59172153029",
-             # agregá aquí cuando tengas los números
+    "59172157751",
+    "59172153029",
+]
+
+# Números solo lectura (amigos - sin luces)
+AMIGOS = [
+    "59172639992",
+    "59172639992",
+    "59178514955",
 ]
 
 # Todos los autorizados
-NUMEROS_AUTORIZADOS = ADMIN + FAMILIA
+NUMEROS_AUTORIZADOS = ADMIN + FAMILIA + AMIGOS
 
-def menu_principal(es_admin=False):
+def menu_principal(es_admin=False, es_amigo=False):
+    if es_amigo:
+        return (
+            "🏠 *AsistentePersonal — Demo*\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "🌤️ *clima* — Clima Santa Cruz\n"
+            "💲 *usdt* — Precio USDT\n"
+            "🏠 *estado* — Ver estado luces\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "_(Modo demostración)_"
+        )
     menu = (
         "🏠 *AsistentePersonal*\n"
         "━━━━━━━━━━━━━━━━━━━\n"
@@ -46,6 +62,8 @@ def procesar(numero, texto):
         return "⛔ No tenés acceso a este asistente."
 
     es_admin = numero in ADMIN
+    es_familia = numero in FAMILIA
+    es_amigo = numero in AMIGOS
     t = texto.lower().strip()
 
     # Conversación activa
@@ -57,12 +75,20 @@ def procesar(numero, texto):
 
     # Menú
     if any(p in t for p in ["menu", "menú", "ayuda", "help", "inicio", "hola", "hey"]):
-        return menu_principal(es_admin)
+        return menu_principal(es_admin, es_amigo)
 
-    # ── Solo admin ──────────────────────────────────────
-    if not es_admin and any(p in t for p in ["evento", "agendar", "agenda", "tareas", "tarea", "timer", "temporizador"]):
+    # ── Bloqueos para amigos ────────────────────────────
+    if es_amigo:
+        if any(p in t for p in ["luces", "luz", "focos", "nube", "espejo", "principal", "baño", "bano", "todo on", "todo off", "encend", "apag", "prend", "bn", "bd", "buenas noches", "buenos dias", "buenos días"]):
+            return "👀 Modo demostración — solo podés ver clima, USDT y estado de luces."
+        if any(p in t for p in ["evento", "agendar", "agenda", "tareas", "tarea", "timer", "temporizador"]):
+            return "👀 Modo demostración — solo podés ver clima, USDT y estado de luces."
+
+    # ── Bloqueos para familia ───────────────────────────
+    if es_familia and any(p in t for p in ["evento", "agendar", "agenda", "tareas", "tarea", "timer", "temporizador"]):
         return "⛔ No tenés acceso a esa función."
 
+    # ── Solo admin ──────────────────────────────────────
     # Crear evento
     if any(p in t for p in ["evento", "agendar", "reunión", "reunion"]) and not any(p in t for p in ["ver", "mostrar", "hoy", "tengo"]):
         return conversaciones.iniciar_evento(numero)
@@ -85,7 +111,7 @@ def procesar(numero, texto):
             return iniciar_timer(numero, nums[0], enviar_mensaje)
         return "❌ Usá: *timer [minutos]*"
 
-    # ── Todos los autorizados ───────────────────────────
+    # ── Familia y admin ─────────────────────────────────
 
     # Luces
     if any(p in t for p in ["luces", "luz", "focos", "nube", "espejo", "principal", "baño", "bano", "todo on", "todo off"]):
