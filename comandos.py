@@ -56,11 +56,19 @@ def procesar_mensaje(numero, texto):
         return menu_principal()
 
     # Saludo
-    if any(p in t for p in ["hola", "buenas", "hey", "qué tal", "como estas"]):
+    if t in ["hola", "hey", "buenas"]:
         return menu_principal()
 
-    # Luces
-    if any(p in t for p in ["luces", "luz", "focos", "foco"]) and not any(p in t for p in ["on", "off", "encend", "apag", "prend"]):
+    # Crear evento — PRIMERO que tareas para evitar conflictos
+    if t.startswith("evento "):
+        try:
+            partes = texto.split(" ", 3)
+            return crear_evento(partes[1], partes[2], partes[3])
+        except:
+            return "❌ Usá: *evento [titulo] [hoy/mañana] [HH:MM]*"
+
+    # Luces — menú
+    if any(p in t for p in ["luces", "luz", "focos"]) and not any(p in t for p in ["on", "off", "encend", "apag", "prend", "principal", "nube", "baño", "bano", "espejo"]):
         return menu_luces()
 
     # Todo on/off
@@ -69,46 +77,49 @@ def procesar_mensaje(numero, texto):
     if any(p in t for p in ["todo", "todas", "todos"]) and any(p in t for p in ["off", "apag"]):
         return todo_off()
 
-    # Luces individuales
-    for luz_id, luz in LUCES.items():
-        nombre = luz["nombre"].lower()
-        palabras = nombre.split()
-        if any(p in t for p in palabras) or luz_id in t:
+    # Luces individuales por nombre
+    mapa_luces = {
+        "1": ["principal", "techo"],
+        "2": ["nube"],
+        "3": ["baño", "bano"],
+        "4": ["espejo"]
+    }
+    for luz_id, palabras in mapa_luces.items():
+        if any(p in t for p in palabras):
             if any(p in t for p in ["on", "encend", "prend", "pone"]):
                 return encender(luz_id)
             elif any(p in t for p in ["off", "apag", "sac"]):
+                return apagar(luz_id)
+
+    # Luces por número
+    for luz_id in LUCES:
+        if t.startswith(luz_id + " "):
+            if any(p in t for p in ["on", "encend", "prend"]):
+                return encender(luz_id)
+            elif any(p in t for p in ["off", "apag"]):
                 return apagar(luz_id)
 
     # Estado
     if any(p in t for p in ["estado", "qué luces", "que luces", "cuales", "cuáles"]):
         return get_estado()
 
-    # Agenda / Calendar
-    if any(p in t for p in ["agenda", "eventos", "calendario", "qué tengo", "que tengo"]) and not any(p in t for p in ["mañana", "manana"]):
+    # Agenda hoy
+    if any(p in t for p in ["agenda", "eventos", "qué tengo hoy", "que tengo hoy", "calendario"]) and "mañana" not in t and "manana" not in t:
         return ver_eventos_hoy()
 
-    # Crear evento
-    if any(p in t for p in ["agenda", "agendar", "crear evento", "nuevo evento", "reunión", "reunion"]) and any(p in t for p in ["hoy", "mañana", "manana"]):
-        try:
-            partes = texto.split(" ", 3)
-            return crear_evento(partes[1], partes[2], partes[3])
-        except:
-            return "❌ Usá: *evento [titulo] [hoy/mañana] [HH:MM]*"
-
-    # Tareas
+    # Tareas Google
     if any(p in t for p in ["tareas", "pendientes", "qué tengo pendiente", "que tengo pendiente"]):
         return ver_tasks()
-    if any(p in t for p in ["agregar tarea", "nueva tarea", "añadir tarea", "tarea "]):
-        return agregar_task(texto.split("tarea ", 1)[-1])
+
+    if t.startswith("tarea ") or t.startswith("nueva tarea ") or t.startswith("agregar tarea "):
+        titulo = texto.split("tarea ", 1)[-1].strip()
+        return agregar_task(titulo)
 
     # Timer
-    if any(p in t for p in ["timer", "temporizador", "alarma", "minutos", "tiempo"]):
-        try:
-            nums = [s for s in t.split() if s.isdigit()]
-            if nums:
-                return iniciar_timer(numero, nums[0], enviar_mensaje)
-        except:
-            pass
+    if any(p in t for p in ["timer", "temporizador"]):
+        nums = [s for s in t.split() if s.isdigit()]
+        if nums:
+            return iniciar_timer(numero, nums[0], enviar_mensaje)
         return "❌ Usá: *timer [minutos]*"
 
     # Clima
@@ -116,7 +127,7 @@ def procesar_mensaje(numero, texto):
         return obtener_clima()
 
     # USDT
-    if any(p in t for p in ["usdt", "dolar", "dólar", "precio", "cambio", "boliviano"]):
+    if any(p in t for p in ["usdt", "dolar", "dólar", "precio", "cambio"]):
         return obtener_usdt()
 
     # Buenos días
