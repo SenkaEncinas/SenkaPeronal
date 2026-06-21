@@ -90,22 +90,40 @@ def recibir_mensaje():
         value = changes[0].get("value", {})
         messages = value.get("messages", [])
         if not messages: return "ok", 200
+
         mensaje = messages[0]
         numero = mensaje["from"]
         tipo = mensaje["type"]
 
         if tipo == "text":
             texto = mensaje["text"]["body"]
-            respuesta = procesar(numero, texto)
-            enviar_mensaje(numero, respuesta)
+            respuesta = procesar(numero, texto, tipo="text")
+            if respuesta:
+                enviar_mensaje(numero, respuesta)
+
+        elif tipo == "interactive":
+            # Puede ser button reply o list reply
+            interactive = mensaje["interactive"]
+            subtipo = interactive["type"]
+            if subtipo == "button_reply":
+                iid = interactive["button_reply"]["id"]
+                titulo = interactive["button_reply"]["title"]
+            else:  # list_reply
+                iid = interactive["list_reply"]["id"]
+                titulo = interactive["list_reply"]["title"]
+
+            respuesta = procesar(numero, titulo, tipo="interactive", interactive_id=iid)
+            if respuesta:
+                enviar_mensaje(numero, respuesta)
 
         elif tipo == "audio":
             audio_id = mensaje["audio"]["id"]
             texto = procesar_audio(audio_id)
             if texto:
                 enviar_mensaje(numero, f"🎤 _{texto}_")
-                respuesta = procesar(numero, texto)
-                enviar_mensaje(numero, respuesta)
+                respuesta = procesar(numero, texto, tipo="text")
+                if respuesta:
+                    enviar_mensaje(numero, respuesta)
             else:
                 enviar_mensaje(numero, "❌ No pude entender el audio.")
 
