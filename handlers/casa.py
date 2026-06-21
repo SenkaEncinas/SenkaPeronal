@@ -1,6 +1,8 @@
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import threading
+import json
+import os
 
 MQTT_HOST = "2772f609444f473aae9a80a4a5e31db6.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
@@ -14,9 +16,6 @@ LUCES = {
     "4": {"nombre": "Luz espejo",    "topic": "casa/cuarto/luz_espejo"},
 }
 
-estado_casa = {"1": "OFF", "2": "OFF", "3": "OFF", "4": "OFF"}
-
-# Mapa inverso: topic → luz_id
 TOPIC_A_ID = {v["topic"]: k for k, v in LUCES.items()}
 
 MAPA_LUCES = {
@@ -26,15 +25,25 @@ MAPA_LUCES = {
     "4": ["espejo"]
 }
 
-# ─── Cliente MQTT persistente (escucha) ───────────────────────────────────────
+ESTADO_FILE = "/tmp/estado_casa.json"
+
+def leer_estado():
+    if os.path.exists(ESTADO_FILE):
+        with open(ESTADO_FILE, "r") as f:
+            return json.load(f)
+    return {"1": "OFF", "2": "OFF", "3": "OFF", "4": "OFF"}
+
+def guardar_estado(estado):
+    with open(ESTADO_FILE, "w") as f:
+        json.dump(estado, f)
+
+# ─── Cliente MQTT persistente ─────────────────────────────────────────────────
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         for luz in LUCES.values():
             client.subscribe(luz["topic"])
-        print("MQTT listener conectado y suscrito")
-    else:
-        print(f"MQTT listener error: {rc}")
+        print("MQTT listener conectado")
 
 def on_message(client, userdata, msg):
     topic = msg.topic
@@ -42,7 +51,9 @@ def on_message(client, userdata, msg):
     if topic in TOPIC_A_ID:
         luz_id = TOPIC_A_ID[topic]
         if payload in ("ON", "OFF"):
-            estado_casa[luz_id] = payload
+            estado = leer_estado()
+            estado[luz_id] = payload
+            guardar_estado(estado)
             print(f"[MQTT] {LUCES[luz_id]['nombre']} → {payload}")
 
 def iniciar_listener():
@@ -51,14 +62,16 @@ def iniciar_listener():
     listener.tls_set()
     listener.on_connect = on_connect
     listener.on_message = on_message
-    listener.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
-    listener.loop_forever()
+    try:
+        listener.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+        listener.loop_forever()
+    except Exception as e:
+        print(f"MQTT listener error: {e}")
 
-# Arranca en background al importar el módulo
 _thread = threading.Thread(target=iniciar_listener, daemon=True)
 _thread.start()
 
-# ─── Publicar (enviar comandos) ───────────────────────────────────────────────
+# ─── Publicar comandos ────────────────────────────────────────────────────────
 
 def publicar(topic, mensaje):
     publish.single(
@@ -68,33 +81,42 @@ def publicar(topic, mensaje):
         tls={}
     )
 
-# ─── El resto queda igual ─────────────────────────────────────────────────────
+# ─── Funciones de control ─────────────────────────────────────────────────────
 
 def encender(luz_id):
     publicar(LUCES[luz_id]["topic"], "ON")
-    estado_casa[luz_id] = "ON"
+    estado = leer_estado()
+    estado[luz_id] = "ON"
+    guardar_estado(estado)
     return f"💡 {LUCES[luz_id]['nombre']} encendida"
 
 def apagar(luz_id):
     publicar(LUCES[luz_id]["topic"], "OFF")
-    estado_casa[luz_id] = "OFF"
+    estado = leer_estado()
+    estado[luz_id] = "OFF"
+    guardar_estado(estado)
     return f"🌙 {LUCES[luz_id]['nombre']} apagada"
 
 def todo_on():
+    estado = leer_estado()
     for k in LUCES:
         publicar(LUCES[k]["topic"], "ON")
-        estado_casa[k] = "ON"
+        estado[k] = "ON"
+    guardar_estado(estado)
     return "💡 Todas las luces encendidas"
 
 def todo_off():
+    estado = leer_estado()
     for k in LUCES:
         publicar(LUCES[k]["topic"], "OFF")
-        estado_casa[k] = "OFF"
+        estado[k] = "OFF"
+    guardar_estado(estado)
     return "🌙 Todas las luces apagadas"
 
 def get_estado():
+    estado = leer_estado()
     resp = "🏠 *Estado:*\n━━━━━━━━━━━━━\n"
-    for k, v in estado_casa.items():
+    for k, v in estado.items():
         icono = "💡" if v == "ON" else "🌙"
         resp += f"{icono} {LUCES[k]['nombre']}: *{v}*\n"
     return resp
