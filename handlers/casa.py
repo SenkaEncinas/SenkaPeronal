@@ -14,7 +14,14 @@ LUCES = {
 
 estado_casa = {"1": "OFF", "2": "OFF", "3": "OFF", "4": "OFF"}
 
-def publicar_mqtt(topic, mensaje):
+MAPA_LUCES = {
+    "1": ["principal", "techo"],
+    "2": ["nube"],
+    "3": ["baño", "bano"],
+    "4": ["espejo"]
+}
+
+def publicar(topic, mensaje):
     publish.single(
         topic, mensaje,
         hostname=MQTT_HOST, port=MQTT_PORT,
@@ -23,36 +30,35 @@ def publicar_mqtt(topic, mensaje):
     )
 
 def encender(luz_id):
-    publicar_mqtt(LUCES[luz_id]["topic"], "ON")
+    publicar(LUCES[luz_id]["topic"], "ON")
     estado_casa[luz_id] = "ON"
     return f"💡 {LUCES[luz_id]['nombre']} encendida"
 
 def apagar(luz_id):
-    publicar_mqtt(LUCES[luz_id]["topic"], "OFF")
+    publicar(LUCES[luz_id]["topic"], "OFF")
     estado_casa[luz_id] = "OFF"
     return f"🌙 {LUCES[luz_id]['nombre']} apagada"
 
 def todo_on():
     for k in LUCES:
-        publicar_mqtt(LUCES[k]["topic"], "ON")
+        publicar(LUCES[k]["topic"], "ON")
         estado_casa[k] = "ON"
     return "💡 Todas las luces encendidas"
 
 def todo_off():
     for k in LUCES:
-        publicar_mqtt(LUCES[k]["topic"], "OFF")
+        publicar(LUCES[k]["topic"], "OFF")
         estado_casa[k] = "OFF"
     return "🌙 Todas las luces apagadas"
 
 def get_estado():
-    nombres = {"1": "Luz principal", "2": "Nube", "3": "Luz baño", "4": "Luz espejo"}
     resp = "🏠 *Estado:*\n━━━━━━━━━━━━━\n"
     for k, v in estado_casa.items():
         icono = "💡" if v == "ON" else "🌙"
-        resp += f"{icono} {nombres[k]}: *{v}*\n"
+        resp += f"{icono} {LUCES[k]['nombre']}: *{v}*\n"
     return resp
 
-def menu_luces():
+def menu():
     return (
         "💡 *Control de luces*\n"
         "━━━━━━━━━━━━━━━\n"
@@ -61,15 +67,34 @@ def menu_luces():
         "3️⃣ Luz baño\n"
         "4️⃣ Luz espejo\n\n"
         "Ejemplos:\n"
-        "*1 on* — encender luz principal\n"
-        "*2 off* — apagar nube\n"
-        "*todo on* — encender todo\n"
-        "*todo off* — apagar todo"
+        "*encendé la principal*\n"
+        "*apagá la nube*\n"
+        "*todo on* / *todo off*"
     )
 
 def buenas_noches():
     todo_off()
-    return "🌙 *Buenas noches!* Todas las luces apagadas 😴"
+    return "🌙 Todas las luces apagadas 😴"
 
 def buenos_dias():
-    return "☀️ *Buenos días!* Luz principal encendida 💪"
+    encender("1")
+    return "☀️ Luz principal encendida 💪"
+
+def procesar(t):
+    if any(p in t for p in ["todo", "todas"]) and any(p in t for p in ["on", "encend", "prend"]):
+        return todo_on()
+    if any(p in t for p in ["todo", "todas"]) and any(p in t for p in ["off", "apag"]):
+        return todo_off()
+    for luz_id, palabras in MAPA_LUCES.items():
+        if any(p in t for p in palabras):
+            if any(p in t for p in ["on", "encend", "prend", "pone"]):
+                return encender(luz_id)
+            elif any(p in t for p in ["off", "apag", "sac"]):
+                return apagar(luz_id)
+    for luz_id in LUCES:
+        if t.startswith(luz_id + " "):
+            if any(p in t for p in ["on", "encend", "prend"]):
+                return encender(luz_id)
+            elif any(p in t for p in ["off", "apag"]):
+                return apagar(luz_id)
+    return menu()

@@ -5,8 +5,8 @@ import requests
 import tempfile
 import paho.mqtt.client as mqtt
 from whatsapp import enviar_mensaje
-from comandos import procesar_mensaje
-from casa import LUCES, estado_casa
+from router import procesar
+from handlers.casa import LUCES, estado_casa
 from utils import transcribir_audio
 
 app = Flask(__name__)
@@ -96,7 +96,7 @@ def recibir_mensaje():
 
         if tipo == "text":
             texto = mensaje["text"]["body"]
-            respuesta = procesar_mensaje(numero, texto)
+            respuesta = procesar(numero, texto)
             enviar_mensaje(numero, respuesta)
 
         elif tipo == "audio":
@@ -104,7 +104,7 @@ def recibir_mensaje():
             texto = procesar_audio(audio_id)
             if texto:
                 enviar_mensaje(numero, f"🎤 _{texto}_")
-                respuesta = procesar_mensaje(numero, texto)
+                respuesta = procesar(numero, texto)
                 enviar_mensaje(numero, respuesta)
             else:
                 enviar_mensaje(numero, "❌ No pude entender el audio.")
