@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacidad — AsistentePersonal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      line-height: 1.7;
+    }
+    header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 2rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      color: #888;
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+    }
+    main {
+      max-width: 760px;
+      margin: 3rem auto;
+      padding: 0 2rem 4rem;
+    }
+    section {
+      margin-bottom: 2.5rem;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #25d366;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #c0c0c0;
+      font-size: 0.95rem;
+    }
+    ul {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+    ul li {
+      padding: 0.3rem 0;
+      color: #c0c0c0;
+      font-size: 0.95rem;
+    }
+    ul li::before {
+      content: "→ ";
+      color: #25d366;
+    }
+    a { color: #25d366; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #555;
+      font-size: 0.8rem;
+      border-top: 1px solid #1e1e1e;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Política de Privacidad</h1>
+    <p>AsistentePersonal · Última actualización: junio 2026</p>
+  </header>
+  <main>
+    <section>
+      <h2>¿Qué es AsistentePersonal?</h2>
+      <p>AsistentePersonal es un bot de WhatsApp de uso privado que permite controlar dispositivos del hogar (luces via ESP32/MQTT) y funciona como asistente personal con acceso a Google Calendar, Google Tasks, información de clima y precios de criptomonedas. El acceso está restringido a usuarios autorizados.</p>
+    </section>
+
+    <section>
+      <h2>Datos que procesamos</h2>
+      <ul>
+        <li>Número de teléfono de WhatsApp del usuario</li>
+        <li>Contenido de los mensajes de texto enviados al bot</li>
+        <li>Archivos de audio enviados (para transcripción)</li>
+        <li>Datos de Google Calendar y Google Tasks (solo del propietario autorizado)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Cómo usamos los datos</h2>
+      <ul>
+        <li>Procesar comandos de control del hogar (encender/apagar luces)</li>
+        <li>Consultar y crear eventos en Google Calendar</li>
+        <li>Consultar y agregar tareas en Google Tasks</li>
+        <li>Transcribir mensajes de voz mediante Groq Whisper API</li>
+        <li>Verificar permisos de acceso (ADMIN, FAMILIA, AMIGOS)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Almacenamiento y retención</h2>
+      <p>Los mensajes son procesados en tiempo real y no se almacenan en bases de datos permanentes. Los estados de conversación se mantienen temporalmente en memoria del servidor para flujos de múltiples pasos (ej: crear un evento). Los tokens de autenticación de Google se almacenan de forma segura como archivos secretos en el servidor.</p>
+    </section>
+
+    <section>
+      <h2>Terceros</h2>
+      <ul>
+        <li>Meta / WhatsApp Business API — entrega de mensajes</li>
+        <li>Google Calendar & Tasks API — gestión de agenda</li>
+        <li>Groq API (Whisper) — transcripción de audio</li>
+        <li>HiveMQ Cloud — broker MQTT para control de dispositivos</li>
+        <li>Render.com — infraestructura del servidor</li>
+        <li>wttr.in — datos de clima</li>
+        <li>Binance P2P — precios de criptomonedas</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Acceso y control</h2>
+      <p>Solo usuarios explícitamente autorizados por el administrador pueden interactuar con el bot. No recopilamos datos de menores de edad. No vendemos ni compartimos datos con terceros fuera de los servicios listados arriba.</p>
+    </section>
+
+    <section>
+      <h2>Contacto</h2>
+      <p>Para consultas sobre esta política, contactar a: <a href="mailto:senkita571@gmail.com">senkita571@gmail.com</a></p>
+    </section>
+  </main>
+  <footer>© 2026 AsistentePersonal · Uso privado</footer>
+</body>
+</html>
