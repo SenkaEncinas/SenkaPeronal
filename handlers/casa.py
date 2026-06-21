@@ -1,4 +1,6 @@
+import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import threading
 
 MQTT_HOST = "2772f609444f473aae9a80a4a5e31db6.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
@@ -14,12 +16,49 @@ LUCES = {
 
 estado_casa = {"1": "OFF", "2": "OFF", "3": "OFF", "4": "OFF"}
 
+# Mapa inverso: topic → luz_id
+TOPIC_A_ID = {v["topic"]: k for k, v in LUCES.items()}
+
 MAPA_LUCES = {
     "1": ["principal", "techo"],
     "2": ["nube"],
     "3": ["baño", "bano"],
     "4": ["espejo"]
 }
+
+# ─── Cliente MQTT persistente (escucha) ───────────────────────────────────────
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        for luz in LUCES.values():
+            client.subscribe(luz["topic"])
+        print("MQTT listener conectado y suscrito")
+    else:
+        print(f"MQTT listener error: {rc}")
+
+def on_message(client, userdata, msg):
+    topic = msg.topic
+    payload = msg.payload.decode()
+    if topic in TOPIC_A_ID:
+        luz_id = TOPIC_A_ID[topic]
+        if payload in ("ON", "OFF"):
+            estado_casa[luz_id] = payload
+            print(f"[MQTT] {LUCES[luz_id]['nombre']} → {payload}")
+
+def iniciar_listener():
+    listener = mqtt.Client(client_id="flask_listener")
+    listener.username_pw_set(MQTT_USER, MQTT_PASS)
+    listener.tls_set()
+    listener.on_connect = on_connect
+    listener.on_message = on_message
+    listener.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+    listener.loop_forever()
+
+# Arranca en background al importar el módulo
+_thread = threading.Thread(target=iniciar_listener, daemon=True)
+_thread.start()
+
+# ─── Publicar (enviar comandos) ───────────────────────────────────────────────
 
 def publicar(topic, mensaje):
     publish.single(
@@ -28,6 +67,8 @@ def publicar(topic, mensaje):
         auth={"username": MQTT_USER, "password": MQTT_PASS},
         tls={}
     )
+
+# ─── El resto queda igual ─────────────────────────────────────────────────────
 
 def encender(luz_id):
     publicar(LUCES[luz_id]["topic"], "ON")
