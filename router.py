@@ -5,7 +5,7 @@ from whatsapp import (enviar_mensaje, enviar_menu_principal, enviar_menu_luces,
 
 ADMIN = ["59167703883"]
 FAMILIA = ["59172157751", "59172153029"]
-AMIGOS = ["59178560167","59178514955", "59172639992","59177822509","59163541372"]  # números de amigos (modo demo)
+AMIGOS = ["59178560167","59178514955", "59172639992","59177822509","59163541372","59171622488","59177807678"]  # números de amigos (modo demo)
 NUMEROS_AUTORIZADOS = ADMIN + FAMILIA + AMIGOS
 
 def procesar(numero, texto, tipo="text", interactive_id=None):
