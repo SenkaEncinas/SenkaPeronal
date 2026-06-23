@@ -123,8 +123,8 @@ def enviar_menu_principal(numero):
 def enviar_menu_luces(numero):
     enviar_lista(
         numero,
-        "💡 *Control de luces*\n¿Qué querés hacer?",
-        "Ver luces",
+        "💡 *Control de luces y aire*\n¿Qué querés hacer?",
+        "Ver opciones",
         [
             {
                 "title": "Encender",
@@ -134,7 +134,6 @@ def enviar_menu_luces(numero):
                     {"id": "luz_on_3", "title": "💡 Luz baño"},
                     {"id": "luz_on_4", "title": "💡 Luz espejo"},
                     {"id": "luz_on_all", "title": "💡 Todas ON"},
-                    {"id": "aire_on", "title": "❄️ Aire ON"},
                 ]
             },
             {
@@ -145,7 +144,13 @@ def enviar_menu_luces(numero):
                     {"id": "luz_off_3", "title": "🌙 Luz baño"},
                     {"id": "luz_off_4", "title": "🌙 Luz espejo"},
                     {"id": "luz_off_all", "title": "🌙 Todas OFF"},
-                    {"id": "aire_off", "title": "🌙 Aire OFF"},
+                ]
+            },
+            {
+                "title": "❄️ Aire acondicionado",
+                "rows": [
+                    {"id": "aire_on", "title": "❄️ Encender aire"},
+                    {"id": "aire_off", "title": "🌙 Apagar aire"},
                 ]
             }
         ]
