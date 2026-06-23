@@ -134,6 +134,7 @@ def enviar_menu_luces(numero):
                     {"id": "luz_on_3", "title": "💡 Luz baño"},
                     {"id": "luz_on_4", "title": "💡 Luz espejo"},
                     {"id": "luz_on_all", "title": "💡 Todas ON"},
+                    {"id": "aire_on", "title": "❄️ Aire ON"},
                 ]
             },
             {
@@ -144,6 +145,7 @@ def enviar_menu_luces(numero):
                     {"id": "luz_off_3", "title": "🌙 Luz baño"},
                     {"id": "luz_off_4", "title": "🌙 Luz espejo"},
                     {"id": "luz_off_all", "title": "🌙 Todas OFF"},
+                    {"id": "aire_off", "title": "🌙 Aire OFF"},
                 ]
             }
         ]

@@ -98,3 +98,10 @@ def procesar(t):
             elif any(p in t for p in ["off", "apag"]):
                 return apagar(luz_id)
     return menu()
+def aire_on():
+    publicar("casa/cuarto/aire", "ON")
+    return "❄️ Aire encendido"
+
+def aire_off():
+    publicar("casa/cuarto/aire", "OFF")
+    return "🌙 Aire apagado"
