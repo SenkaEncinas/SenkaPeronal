@@ -96,11 +96,11 @@ def enviar_menu_principal(numero):
         "Ver opciones",
         [
             {
-                "title": "🏠 Casa",
-                "rows": [
-                    {"id": "menu_luces", "title": "💡 Luces", "description": "Control de luces del cuarto"},
-                ]
-            },
+             "title": "🏠 Casa",
+           "rows": [
+        {"id": "menu_casa", "title": "🏠 Casa", "description": "Luces y aire del cuarto"},
+    ]
+},
             {
                 "title": "📋 Personal",
                 "rows": [
@@ -123,8 +123,8 @@ def enviar_menu_principal(numero):
 def enviar_menu_luces(numero):
     enviar_lista(
         numero,
-        "💡 *Control de luces y aire*\n¿Qué querés hacer?",
-        "Ver opciones",
+        "💡 *Control de luces*\n¿Qué querés hacer?",
+        "Ver luces",
         [
             {
                 "title": "Encender",
@@ -145,14 +145,27 @@ def enviar_menu_luces(numero):
                     {"id": "luz_off_4", "title": "🌙 Luz espejo"},
                     {"id": "luz_off_all", "title": "🌙 Todas OFF"},
                 ]
-            },
-            {
-                "title": "❄️ Aire acondicionado",
-                "rows": [
-                    {"id": "aire_on", "title": "❄️ Encender aire"},
-                    {"id": "aire_off", "title": "🌙 Apagar aire"},
-                ]
             }
+        ]
+    )
+
+def enviar_menu_aire(numero):
+    enviar_botones(
+        numero,
+        "❄️ *Aire acondicionado*\n¿Qué hacemos?",
+        [
+            {"id": "aire_on",  "title": "❄️ Encender"},
+            {"id": "aire_off", "title": "🌙 Apagar"},
+        ]
+    )
+
+def enviar_menu_casa(numero):
+    enviar_botones(
+        numero,
+        "🏠 *Control del cuarto*",
+        [
+            {"id": "menu_luces", "title": "💡 Luces"},
+            {"id": "menu_aire",  "title": "❄️ Aire"},
         ]
     )
 

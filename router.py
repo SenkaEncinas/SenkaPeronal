@@ -134,5 +134,12 @@ def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
         return casa.aire_on()
     if iid == "aire_off":
         return casa.aire_off()
-
+    if iid == "menu_casa":
+        from whatsapp import enviar_menu_casa
+        enviar_menu_casa(numero)
+        return None
+    if iid == "menu_aire":
+        from whatsapp import enviar_menu_aire
+        enviar_menu_aire(numero)
+        return None
     return None
