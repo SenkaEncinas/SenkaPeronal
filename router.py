@@ -1,6 +1,7 @@
 from handlers import casa, calendar, tasks, conversaciones
 from utils import obtener_clima, obtener_usdt, iniciar_timer
-from whatsapp import (enviar_mensaje, enviar_menu_principal, enviar_menu_luces,
+from whatsapp import (enviar_mensaje, enviar_menu_principal, enviar_menu_casa,
+                      enviar_menu_luces, enviar_menu_aire,
                       enviar_botones_fecha, enviar_lista_horas, enviar_botones)
 
 ADMIN = ["59167703883"]
@@ -17,6 +18,7 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
     es_amigo   = numero in AMIGOS
     t = texto.lower().strip() if texto else ""
 
+    # ── Conversación activa ──────────────────────────────────────────────────
     if conversaciones.activa(numero):
         if not es_admin:
             conversaciones.cancelar(numero)
@@ -24,13 +26,16 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
         entrada = interactive_id if interactive_id else texto
         return conversaciones.continuar(numero, entrada, enviar_botones_fecha, enviar_lista_horas, enviar_mensaje)
 
+    # ── Interactivo ──────────────────────────────────────────────────────────
     if tipo == "interactive" and interactive_id:
         return _procesar_interactivo(numero, interactive_id, es_admin, es_familia, es_amigo)
 
+    # ── Menú principal por texto ─────────────────────────────────────────────
     if any(p in t for p in ["menu", "menú", "ayuda", "help", "inicio", "hola", "hey"]):
         enviar_menu_principal(numero)
         return None
 
+    # ── Bloqueos amigos ──────────────────────────────────────────────────────
     if es_amigo:
         if any(p in t for p in ["luces","luz","focos","nube","espejo","principal","baño","bano",
                                   "todo on","todo off","encend","apag","prend","bn","bd",
@@ -39,9 +44,11 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
         if any(p in t for p in ["evento","agendar","agenda","tareas","tarea","timer","temporizador"]):
             return "👀 Modo demostración — solo podés ver clima, USDT y estado de luces."
 
+    # ── Bloqueos familia ─────────────────────────────────────────────────────
     if es_familia and any(p in t for p in ["evento","agendar","agenda","tareas","tarea","timer","temporizador"]):
         return "⛔ No tenés acceso a esa función."
 
+    # ── Admin ────────────────────────────────────────────────────────────────
     if any(p in t for p in ["evento","agendar","reunión","reunion"]) and not any(p in t for p in ["ver","mostrar","hoy","tengo"]):
         return conversaciones.iniciar_evento(numero, enviar_botones_fecha)
 
@@ -60,13 +67,17 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
             return iniciar_timer(numero, nums[0], enviar_mensaje)
         return "❌ Usá: *timer [minutos]*"
 
-    # Aire acondicionado
-    if any(p in t for p in ["aire", "ac", "acondicionado"]):
-        if any(p in t for p in ["on", "encend", "prend"]):
+    # ── Aire ─────────────────────────────────────────────────────────────────
+    if any(p in t for p in ["aire","ac","acondicionado"]):
+        if any(p in t for p in ["on","encend","prend"]):
             return casa.aire_on()
-        elif any(p in t for p in ["off", "apag"]):
+        elif any(p in t for p in ["off","apag"]):
             return casa.aire_off()
+        else:
+            enviar_menu_aire(numero)
+            return None
 
+    # ── Luces ─────────────────────────────────────────────────────────────────
     if any(p in t for p in ["luces","luz","focos","nube","espejo","principal","baño","bano","todo on","todo off"]):
         enviar_menu_luces(numero)
         return None
@@ -74,12 +85,14 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
     if any(p in t for p in ["estado","qué luces","que luces"]):
         return casa.get_estado()
 
+    # ── Info ──────────────────────────────────────────────────────────────────
     if any(p in t for p in ["clima","tiempo","temperatura","lluvia","calor","frio","frío"]):
         return obtener_clima()
 
     if any(p in t for p in ["usdt","dolar","dólar","precio","cambio"]):
         return obtener_usdt()
 
+    # ── Rutinas ───────────────────────────────────────────────────────────────
     if any(p in t for p in ["buenos días","buenos dias","buen día","buen dia","bd","desperté","desperte"]):
         resumen = f"☀️ *Buenos días!*\n━━━━━━━━━━━━━━━━━━━\n\n{obtener_clima()}\n\n{obtener_usdt()}\n\n"
         if es_admin:
@@ -97,10 +110,33 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
 
 
 def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
+
+    # ── Navegación volver ─────────────────────────────────────────────────────
+    if iid == "volver_principal":
+        enviar_menu_principal(numero)
+        return None
+
+    if iid == "volver_casa":
+        enviar_menu_casa(numero)
+        return None
+
+    # ── Menús ─────────────────────────────────────────────────────────────────
+    if iid == "menu_casa":
+        if es_amigo:
+            return "👀 Modo demostración — no podés controlar la casa."
+        enviar_menu_casa(numero)
+        return None
+
     if iid == "menu_luces":
         if es_amigo:
             return "👀 Modo demostración — no podés controlar las luces."
         enviar_menu_luces(numero)
+        return None
+
+    if iid == "menu_aire":
+        if es_amigo:
+            return "👀 Modo demostración — no podés controlar el aire."
+        enviar_menu_aire(numero)
         return None
 
     if iid == "menu_agenda":
@@ -119,27 +155,38 @@ def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
     if iid == "menu_usdt":
         return obtener_usdt()
 
+    # ── Luces ─────────────────────────────────────────────────────────────────
     if iid == "luz_on_all":
-        return casa.todo_on()
+        resp = casa.todo_on()
+        enviar_menu_luces(numero)
+        return resp
+
     if iid == "luz_off_all":
-        return casa.todo_off()
+        resp = casa.todo_off()
+        enviar_menu_luces(numero)
+        return resp
+
     if iid.startswith("luz_on_"):
         luz_id = iid.replace("luz_on_", "")
-        return casa.encender(luz_id)
+        resp = casa.encender(luz_id)
+        enviar_menu_luces(numero)
+        return resp
+
     if iid.startswith("luz_off_"):
         luz_id = iid.replace("luz_off_", "")
-        return casa.apagar(luz_id)
+        resp = casa.apagar(luz_id)
+        enviar_menu_luces(numero)
+        return resp
 
+    # ── Aire ──────────────────────────────────────────────────────────────────
     if iid == "aire_on":
-        return casa.aire_on()
-    if iid == "aire_off":
-        return casa.aire_off()
-    if iid == "menu_casa":
-        from whatsapp import enviar_menu_casa
-        enviar_menu_casa(numero)
-        return None
-    if iid == "menu_aire":
-        from whatsapp import enviar_menu_aire
+        resp = casa.aire_on()
         enviar_menu_aire(numero)
-        return None
+        return resp
+
+    if iid == "aire_off":
+        resp = casa.aire_off()
+        enviar_menu_aire(numero)
+        return resp
+
     return None

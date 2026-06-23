@@ -3,16 +3,13 @@ import os
 
 WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
-
-BASE_URL = f"https://graph.facebook.com/v21.0"
+BASE_URL = "https://graph.facebook.com/v21.0"
 
 def _headers():
     return {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
         "Content-Type": "application/json"
     }
-
-# ─── Mensaje de texto normal ──────────────────────────────────────────────────
 
 def enviar_mensaje(numero, texto):
     url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
@@ -24,15 +21,7 @@ def enviar_mensaje(numero, texto):
     }
     requests.post(url, headers=_headers(), json=body)
 
-# ─── Botones (máximo 3) ───────────────────────────────────────────────────────
-
 def enviar_botones(numero, texto, botones):
-    """
-    botones = [
-        {"id": "btn_1", "title": "💡 Luces"},
-        {"id": "btn_2", "title": "📅 Agenda"},
-    ]
-    """
     url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
     body = {
         "messaging_product": "whatsapp",
@@ -51,26 +40,7 @@ def enviar_botones(numero, texto, botones):
     }
     requests.post(url, headers=_headers(), json=body)
 
-# ─── Lista desplegable (máximo 10 opciones) ───────────────────────────────────
-
 def enviar_lista(numero, texto, boton_texto, secciones):
-    """
-    secciones = [
-        {
-            "title": "🌅 Mañana",
-            "rows": [
-                {"id": "hora_8", "title": "8:00"},
-                {"id": "hora_9", "title": "9:00"},
-            ]
-        },
-        {
-            "title": "🌆 Tarde",
-            "rows": [
-                {"id": "hora_12", "title": "12:00"},
-            ]
-        }
-    ]
-    """
     url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
     body = {
         "messaging_product": "whatsapp",
@@ -92,15 +62,15 @@ def enviar_lista(numero, texto, boton_texto, secciones):
 def enviar_menu_principal(numero):
     enviar_lista(
         numero,
-        "👋 ¿Qué hacemos?",
+        "👋 *AsistentePersonal*\n¿Qué hacemos?",
         "Ver opciones",
         [
             {
-             "title": "🏠 Casa",
-           "rows": [
-        {"id": "menu_casa", "title": "🏠 Casa", "description": "Luces y aire del cuarto"},
-    ]
-},
+                "title": "🏠 Casa",
+                "rows": [
+                    {"id": "menu_casa", "title": "🏠 Casa", "description": "Luces y aire del cuarto"},
+                ]
+            },
             {
                 "title": "📋 Personal",
                 "rows": [
@@ -118,7 +88,20 @@ def enviar_menu_principal(numero):
         ]
     )
 
-# ─── Menú de luces ────────────────────────────────────────────────────────────
+# ─── Menú casa ────────────────────────────────────────────────────────────────
+
+def enviar_menu_casa(numero):
+    enviar_botones(
+        numero,
+        "🏠 *Control del cuarto*\n¿Qué querés controlar?",
+        [
+            {"id": "menu_luces", "title": "💡 Luces"},
+            {"id": "menu_aire",  "title": "❄️ Aire"},
+            {"id": "volver_principal", "title": "⬅️ Volver"},
+        ]
+    )
+
+# ─── Menú luces ───────────────────────────────────────────────────────────────
 
 def enviar_menu_luces(numero):
     enviar_lista(
@@ -127,45 +110,44 @@ def enviar_menu_luces(numero):
         "Ver luces",
         [
             {
-                "title": "Encender",
+                "title": "💡 Encender",
                 "rows": [
-                    {"id": "luz_on_1", "title": "💡 Luz principal"},
-                    {"id": "luz_on_2", "title": "💡 Nube"},
-                    {"id": "luz_on_3", "title": "💡 Luz baño"},
-                    {"id": "luz_on_4", "title": "💡 Luz espejo"},
+                    {"id": "luz_on_1",   "title": "💡 Luz principal"},
+                    {"id": "luz_on_2",   "title": "💡 Nube"},
+                    {"id": "luz_on_3",   "title": "💡 Luz baño"},
+                    {"id": "luz_on_4",   "title": "💡 Luz espejo"},
                     {"id": "luz_on_all", "title": "💡 Todas ON"},
                 ]
             },
             {
-                "title": "Apagar",
+                "title": "🌙 Apagar",
                 "rows": [
-                    {"id": "luz_off_1", "title": "🌙 Luz principal"},
-                    {"id": "luz_off_2", "title": "🌙 Nube"},
-                    {"id": "luz_off_3", "title": "🌙 Luz baño"},
-                    {"id": "luz_off_4", "title": "🌙 Luz espejo"},
+                    {"id": "luz_off_1",   "title": "🌙 Luz principal"},
+                    {"id": "luz_off_2",   "title": "🌙 Nube"},
+                    {"id": "luz_off_3",   "title": "🌙 Luz baño"},
+                    {"id": "luz_off_4",   "title": "🌙 Luz espejo"},
                     {"id": "luz_off_all", "title": "🌙 Todas OFF"},
+                ]
+            },
+            {
+                "title": "↩️ Navegación",
+                "rows": [
+                    {"id": "volver_casa", "title": "⬅️ Volver a Casa"},
                 ]
             }
         ]
     )
+
+# ─── Menú aire ────────────────────────────────────────────────────────────────
 
 def enviar_menu_aire(numero):
     enviar_botones(
         numero,
         "❄️ *Aire acondicionado*\n¿Qué hacemos?",
         [
-            {"id": "aire_on",  "title": "❄️ Encender"},
-            {"id": "aire_off", "title": "🌙 Apagar"},
-        ]
-    )
-
-def enviar_menu_casa(numero):
-    enviar_botones(
-        numero,
-        "🏠 *Control del cuarto*",
-        [
-            {"id": "menu_luces", "title": "💡 Luces"},
-            {"id": "menu_aire",  "title": "❄️ Aire"},
+            {"id": "aire_on",     "title": "❄️ Encender"},
+            {"id": "aire_off",    "title": "🌙 Apagar"},
+            {"id": "volver_casa", "title": "⬅️ Volver"},
         ]
     )
 
@@ -176,9 +158,9 @@ def enviar_botones_fecha(numero):
         numero,
         "📅 ¿Para qué día es el evento?",
         [
-            {"id": "fecha_hoy",     "title": "📅 Hoy"},
-            {"id": "fecha_manana",  "title": "📅 Mañana"},
-            {"id": "fecha_manual",  "title": "✏️ Otra fecha"},
+            {"id": "fecha_hoy",    "title": "📅 Hoy"},
+            {"id": "fecha_manana", "title": "📅 Mañana"},
+            {"id": "fecha_manual", "title": "✏️ Otra fecha"},
         ]
     )
 
@@ -213,10 +195,10 @@ def enviar_lista_horas(numero):
             {
                 "title": "🌙 Noche",
                 "rows": [
-                    {"id": "hora_18", "title": "18:00"},
-                    {"id": "hora_19", "title": "19:00"},
-                    {"id": "hora_20", "title": "20:00"},
-                    {"id": "hora_21", "title": "21:00"},
+                    {"id": "hora_18",     "title": "18:00"},
+                    {"id": "hora_19",     "title": "19:00"},
+                    {"id": "hora_20",     "title": "20:00"},
+                    {"id": "hora_21",     "title": "21:00"},
                     {"id": "hora_manual", "title": "✏️ Otra hora"},
                 ]
             }
