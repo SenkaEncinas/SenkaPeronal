@@ -102,11 +102,10 @@ def enviar_menu_casa(numero):
     )
 
 # ─── Menú luces ───────────────────────────────────────────────────────────────
-
 def enviar_menu_luces(numero):
     enviar_lista(
         numero,
-        "💡 *Control de luces*\n¿Qué querés hacer?",
+        "💡 *Control de luces*\n¿Qué querés hacer?\n\n_Escribí *casa* para volver atrás_",
         "Ver luces",
         [
             {
@@ -127,12 +126,6 @@ def enviar_menu_luces(numero):
                     {"id": "luz_off_3",   "title": "🌙 Luz baño"},
                     {"id": "luz_off_4",   "title": "🌙 Luz espejo"},
                     {"id": "luz_off_all", "title": "🌙 Todas OFF"},
-                ]
-            },
-            {
-                "title": "↩️ Navegación",
-                "rows": [
-                    {"id": "volver_casa", "title": "⬅️ Volver a Casa"},
                 ]
             }
         ]

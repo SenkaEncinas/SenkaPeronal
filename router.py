@@ -67,6 +67,11 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
             return iniciar_timer(numero, nums[0], enviar_mensaje)
         return "❌ Usá: *timer [minutos]*"
 
+    # ── Casa ──────────────────────────────────────────────────────────────────
+    if t == "casa":
+        enviar_menu_casa(numero)
+        return None
+
     # ── Aire ─────────────────────────────────────────────────────────────────
     if any(p in t for p in ["aire","ac","acondicionado"]):
         if any(p in t for p in ["on","encend","prend"]):
