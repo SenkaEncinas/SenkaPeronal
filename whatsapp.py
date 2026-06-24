@@ -158,41 +158,35 @@ def enviar_botones_fecha(numero):
     )
 
 # ─── Lista de horas (crear evento) ────────────────────────────────────────────
-
 def enviar_lista_horas(numero):
     enviar_lista(
         numero,
-        "🕐 ¿A qué hora?",
+        "🕐 ¿A qué hora?\n\n_O escribí la hora directamente: *15:00* o *3 tarde*_",
         "Ver horarios",
         [
             {
                 "title": "🌅 Mañana",
                 "rows": [
+                    {"id": "hora_7",  "title": "7:00"},
                     {"id": "hora_8",  "title": "8:00"},
                     {"id": "hora_9",  "title": "9:00"},
                     {"id": "hora_10", "title": "10:00"},
-                    {"id": "hora_11", "title": "11:00"},
                 ]
             },
             {
                 "title": "☀️ Tarde",
                 "rows": [
                     {"id": "hora_12", "title": "12:00"},
-                    {"id": "hora_13", "title": "13:00"},
                     {"id": "hora_14", "title": "14:00"},
-                    {"id": "hora_15", "title": "15:00"},
                     {"id": "hora_16", "title": "16:00"},
-                    {"id": "hora_17", "title": "17:00"},
+                    {"id": "hora_18", "title": "18:00"},
                 ]
             },
             {
                 "title": "🌙 Noche",
                 "rows": [
-                    {"id": "hora_18",     "title": "18:00"},
-                    {"id": "hora_19",     "title": "19:00"},
-                    {"id": "hora_20",     "title": "20:00"},
-                    {"id": "hora_21",     "title": "21:00"},
-                    {"id": "hora_manual", "title": "✏️ Otra hora"},
+                    {"id": "hora_20", "title": "20:00"},
+                    {"id": "hora_22", "title": "22:00"},
                 ]
             }
         ]
