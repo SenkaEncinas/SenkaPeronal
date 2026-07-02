@@ -1,15 +1,10 @@
-from google_auth_oauthlib.flow import InstalledAppFlow
-import json
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
-SCOPES = [
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/tasks'
-]
+def get_calendar():
+    creds = Credentials.from_authorized_user_file('google_token.json')
+    return build('calendar', 'v3', credentials=creds)
 
-flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-creds = flow.run_local_server(port=0)
-
-with open('google_token.json', 'w') as f:
-    f.write(creds.to_json())
-
-print("Token generado correctamente!")
+def get_tasks():
+    creds = Credentials.from_authorized_user_file('google_token.json')
+    return build('tasks', 'v1', credentials=creds)
