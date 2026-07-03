@@ -5,7 +5,7 @@ from whatsapp import (enviar_mensaje, enviar_menu_principal, enviar_menu_casa,
                       enviar_botones_fecha, enviar_lista_horas, enviar_botones)
 
 ADMIN = ["59167703883"]
-FAMILIA = ["59172157751", "59172153029"]
+FAMILIA = ["59172157751", "59172153029", "59176970660"]
 AMIGOS = ["59178560167","59178514955","59172639992","59177822509","59163541372","59171622488","59177807678"]
 NUMEROS_AUTORIZADOS = ADMIN + FAMILIA + AMIGOS
 
