@@ -3,11 +3,12 @@ import threading
 import time
 from datetime import datetime, timedelta
 
-BNB_ACCOUNT_ID = "TU_ACCOUNT_ID_AQUI"
-BNB_AUTH_ID = "TU_AUTHORIZATION_ID_AQUI"
+import os
+
+BNB_ACCOUNT_ID = os.environ.get("BNB_ACCOUNT_ID")
+BNB_AUTH_ID = os.environ.get("BNB_AUTH_ID")
 DESTINATION_ACCOUNT = "1"
 BASE_URL = "http://test.bnb.com.bo"
-
 # QRs activos: {qr_id: {"numero": ..., "monto": ..., "gloss": ...}}
 qrs_activos = {}
 
