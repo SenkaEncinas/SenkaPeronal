@@ -57,6 +57,34 @@ def enviar_lista(numero, texto, boton_texto, secciones):
     }
     requests.post(url, headers=_headers(), json=body)
 
+def enviar_imagen_qr(numero, qr_bytes_base64, caption=""):
+    import base64 as b64
+    try:
+        upload_url = f"{BASE_URL}/{PHONE_NUMBER_ID}/media"
+        imagen = b64.b64decode(qr_bytes_base64)
+        files = {
+            "file": ("qr.png", imagen, "image/png"),
+            "messaging_product": (None, "whatsapp")
+        }
+        r = requests.post(
+            upload_url,
+            headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}"},
+            files=files
+        )
+        media_id = r.json().get("id")
+        if not media_id:
+            return
+        url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
+        body = {
+            "messaging_product": "whatsapp",
+            "to": numero,
+            "type": "image",
+            "image": {"id": media_id, "caption": caption}
+        }
+        requests.post(url, headers=_headers(), json=body)
+    except Exception as e:
+        print(f"Error enviando QR: {e}")
+
 # ─── Menú principal ───────────────────────────────────────────────────────────
 
 def enviar_menu_principal(numero):
@@ -69,6 +97,12 @@ def enviar_menu_principal(numero):
                 "title": "🏠 Casa",
                 "rows": [
                     {"id": "menu_casa", "title": "🏠 Casa", "description": "Luces y aire del cuarto"},
+                ]
+            },
+            {
+                "title": "💰 Finanzas",
+                "rows": [
+                    {"id": "menu_finanzas", "title": "💰 Finanzas BNB", "description": "Cobrar, pagar, saldo"},
                 ]
             },
             {
@@ -102,6 +136,7 @@ def enviar_menu_casa(numero):
     )
 
 # ─── Menú luces ───────────────────────────────────────────────────────────────
+
 def enviar_menu_luces(numero):
     enviar_lista(
         numero,
@@ -144,6 +179,30 @@ def enviar_menu_aire(numero):
         ]
     )
 
+# ─── Menú finanzas ────────────────────────────────────────────────────────────
+
+def enviar_menu_finanzas(numero):
+    enviar_botones(
+        numero,
+        "💰 *Finanzas BNB*\n¿Qué querés hacer?",
+        [
+            {"id": "bnb_cobrar",       "title": "📥 Cobrar QR"},
+            {"id": "bnb_consultas",    "title": "📋 Consultas"},
+            {"id": "volver_principal", "title": "⬅️ Volver"},
+        ]
+    )
+
+def enviar_menu_bnb_consultas(numero):
+    enviar_botones(
+        numero,
+        "📋 *Consultas BNB*",
+        [
+            {"id": "bnb_saldo",       "title": "💰 Saldo"},
+            {"id": "bnb_qrs_hoy",     "title": "📊 QRs de hoy"},
+            {"id": "volver_finanzas", "title": "⬅️ Volver"},
+        ]
+    )
+
 # ─── Botones fecha (crear evento) ─────────────────────────────────────────────
 
 def enviar_botones_fecha(numero):
@@ -158,6 +217,7 @@ def enviar_botones_fecha(numero):
     )
 
 # ─── Lista de horas (crear evento) ────────────────────────────────────────────
+
 def enviar_lista_horas(numero):
     enviar_lista(
         numero,
@@ -191,54 +251,3 @@ def enviar_lista_horas(numero):
             }
         ]
     )
-def enviar_imagen_bytes(numero, imagen_bytes, caption=""):
-    import base64
-    url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
-    # Subir la imagen primero como media
-    upload_url = f"{BASE_URL}/{PHONE_NUMBER_ID}/media"
-    files = {
-        "file": ("qr.png", base64.b64decode(imagen_bytes), "image/png"),
-        "messaging_product": (None, "whatsapp")
-    }
-    r = requests.post(upload_url, headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}"}, files=files)
-    media_id = r.json().get("id")
-    if not media_id:
-        return
-
-    body = {
-        "messaging_product": "whatsapp",
-        "to": numero,
-        "type": "image",
-        "image": {"id": media_id, "caption": caption}
-    }
-    requests.post(url, headers=_headers(), json=body)
-def enviar_imagen_qr(numero, qr_bytes_base64, caption=""):
-    import base64 as b64
-    try:
-        # Subir imagen a WhatsApp
-        upload_url = f"{BASE_URL}/{PHONE_NUMBER_ID}/media"
-        imagen = b64.b64decode(qr_bytes_base64)
-        files = {
-            "file": ("qr.png", imagen, "image/png"),
-            "messaging_product": (None, "whatsapp")
-        }
-        r = requests.post(
-            upload_url,
-            headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}"},
-            files=files
-        )
-        media_id = r.json().get("id")
-        if not media_id:
-            return
-
-        # Enviar imagen
-        url = f"{BASE_URL}/{PHONE_NUMBER_ID}/messages"
-        body = {
-            "messaging_product": "whatsapp",
-            "to": numero,
-            "type": "image",
-            "image": {"id": media_id, "caption": caption}
-        }
-        requests.post(url, headers=_headers(), json=body)
-    except Exception as e:
-        print(f"Error enviando QR: {e}")
