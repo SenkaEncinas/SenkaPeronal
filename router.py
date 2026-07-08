@@ -1,8 +1,10 @@
-from handlers import casa, calendar, tasks, conversaciones
+from handlers import casa, calendar, tasks, conversaciones, bnb
 from utils import obtener_clima, obtener_usdt, iniciar_timer
 from whatsapp import (enviar_mensaje, enviar_menu_principal, enviar_menu_casa,
                       enviar_menu_luces, enviar_menu_aire,
-                      enviar_botones_fecha, enviar_lista_horas, enviar_botones)
+                      enviar_botones_fecha, enviar_lista_horas, enviar_botones,
+                      enviar_imagen_qr)
+import threading
 
 ADMIN = ["59167703883"]
 FAMILIA = ["59172157751", "59172153029", "59176970660"]
@@ -67,6 +69,20 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
             return iniciar_timer(numero, nums[0], enviar_mensaje)
         return "❌ Usá: *timer [minutos]*"
 
+    # ── Cobro QR BNB ─────────────────────────────────────────────────────────
+    if any(p in t for p in ["cobrar","cobro","qr"]):
+        if not es_admin:
+            return "⛔ No tenés acceso a esa función."
+        monto, gloss, error = bnb.procesar_cobro(texto)
+        if error:
+            return error
+        threading.Thread(
+            target=bnb.generar_qr,
+            args=(numero, monto, gloss, enviar_imagen_qr, enviar_mensaje),
+            daemon=True
+        ).start()
+        return "⏳ Generando QR de cobro..."
+
     # ── Casa ──────────────────────────────────────────────────────────────────
     if t == "casa":
         enviar_menu_casa(numero)
@@ -116,7 +132,6 @@ def procesar(numero, texto, tipo="text", interactive_id=None):
 
 def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
 
-    # ── Navegación volver ─────────────────────────────────────────────────────
     if iid == "volver_principal":
         enviar_menu_principal(numero)
         return None
@@ -125,7 +140,6 @@ def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
         enviar_menu_casa(numero)
         return None
 
-    # ── Menús ─────────────────────────────────────────────────────────────────
     if iid == "menu_casa":
         if es_amigo:
             return "👀 Modo demostración — no podés controlar la casa."
@@ -160,7 +174,6 @@ def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
     if iid == "menu_usdt":
         return obtener_usdt()
 
-    # ── Luces ─────────────────────────────────────────────────────────────────
     if iid == "luz_on_all":
         resp = casa.todo_on()
         enviar_menu_luces(numero)
@@ -183,7 +196,6 @@ def _procesar_interactivo(numero, iid, es_admin, es_familia, es_amigo):
         enviar_menu_luces(numero)
         return resp
 
-    # ── Aire ──────────────────────────────────────────────────────────────────
     if iid == "aire_on":
         resp = casa.aire_on()
         enviar_menu_aire(numero)
